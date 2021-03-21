@@ -1,0 +1,43 @@
+Package: CovidVaccinePrediction
+Type: Package
+Title: COVID-19 vaccination prediction methoods research and model development
+Version: 0.0.4
+Author: Jenna Reps [aut, cre]
+Maintainer: Jenna M Reps <reps@ohdsi.org>
+Description: Study to investigate the target and outcome phenotypes to use when developing COVID-19 vaccination prediction models for outcomes of interest
+Depends:
+    R(>= 3.6.0)
+Imports:
+    DatabaseConnector,
+    jsonlite,
+    magrittr,
+    PatientLevelPrediction (>= 4.3.4),
+    ParallelLogger,
+    reshape2,
+    SqlRender,
+    utils
+Suggests:
+    Andromeda,
+    DT,
+    devtools,
+    FeatureExtraction,
+    ggplot2,
+    grDevices,
+	gridExtra,
+	htmltools,
+    Hydra,
+    knitr,
+    officer,
+    OhdsiSharing,
+    plotly,
+    rmarkdown,
+    R.utils,
+    shiny,
+    shinycssloaders,
+    shinydashboard,
+    shinyWidgets,
+    VennDiagram
+License: Apache License 2.0
+VignetteBuilder: knitr
+LazyData: TRUE
+RoxygenNote: 7.1.1

@@ -1,0 +1,32 @@
+cohortId,atlasId,name
+1001,1001,1JAN 2017-2019
+2001,2001,flu vaccine 2017-2019
+3001,3001,random visit 2017-2019
+1002,1002,AcuteMyocardialInfarction
+2002,2002,AMI_IP
+3002,3002,AMI_IP_FDA
+1003,1003,Anaphylaxis
+2003,2003,Anaphylaxis IPED
+3003,3003,Anaphylaxis FDA
+1004,1004,Appendicitis
+2004,2004,Appendicitis IP
+3004,3004,Appendicitis FDA
+1005,1005,DisIntraCoag
+2005,2005,DisIntraCoag_IP
+3005,3005,DisIntraCoag_FDA
+1006,1006,Encephalomyelitis
+2006,2006,Encephalomyelitis IP
+3006,3006,Encephalomyelitis IP FDA
+1007,1007,NonHemorrhagicStroke
+2007,2007,NonHemorrhagicStroke IP
+3007,3007,NonHemorrhagicStroke IP FDA
+4007,4007,NonHemorrhagicStroke broad
+1008,1008,PulmonaryEmbolism
+2008,2008,PulmonaryEmbolism IP
+3008,3008,PulmonaryEmbolism FDA
+1009,1009,GuillainBarreSyndrome
+2009,2009,GuillainBarreSyndrome IP
+4009,4009,GBS_IP_Primary
+1010,1010,HemorrhagicStroke
+2010,2010,HemorrhagicStroke IP
+3010,3010,HemorrhagicStroke IP FDA

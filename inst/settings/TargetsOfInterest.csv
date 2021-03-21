@@ -1,0 +1,4 @@
+cohortName, cohortDescription
+Set date 1st Jan 2017-2019, "This cohort contain all patients who were in the database on Janurary the 1st in 2017, 2018 or 2019.  Their index date is the earliest 1st January between 2017-2019 they were in the database"
+Random visit 2017-2019, "This cohort contains all patients who had one or more visits during 2017, 2018 and 2019.  Their index date is a randomly selected visit between 2017-2019"
+Flu vaccine 2017-2019, "This cohort contain all patients who had a flu vaccine recorded during 2017, 2018 or 2019.  Their index date is the earliest flu vaccine date between 2017-2019"

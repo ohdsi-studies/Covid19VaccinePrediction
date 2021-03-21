@@ -1,0 +1,407 @@
+---
+title: "| RESEARCH PROTOCOL\n| \n| Evaluating the Sensitivity Of Prediction Model Development and Performnance Due To Phenotypes Applied To COVID-19 VACCINES \n"
+fontsize: 12pt
+geometry: margin=1in
+output:
+  bookdown::html_document2:
+    df_print: paged
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
+    number_sections: yes
+    number_tables: yes
+    css: "style.css"
+  bookdown::pdf_document2:
+    keep_tex: yes
+    latex_engine: xelatex
+    md_extensions: +raw_attribute
+    number_sections: yes
+    # citation_package: natbib
+    includes:
+      before_body: title.tex
+  bookdown::word_document2:
+    toc: yes
+header-includes:
+- \usepackage[numbers,sort&compress]{natbib}
+- \usepackage{booktabs}
+- \usepackage{longtable}
+- \usepackage{array}
+- \usepackage{multirow}
+- \usepackage{wrapfig}
+- \usepackage{float}
+- \usepackage{colortbl}
+- \usepackage{pdflscape}
+- \usepackage{tabu}
+- \usepackage{threeparttable}
+- \usepackage{threeparttablex}
+- \usepackage[normalem]{ulem}
+- \usepackage{makecell}
+- \usepackage{caption}
+- \usepackage{rotating}
+- \usepackage{multirow}
+- \usepackage{mwe,tikz}
+- \usepackage[percent]{overpic}
+- \usepackage{enumitem}
+- \usepackage{hyperref}
+- \newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+- \newcommand{\footerDate}{`r params$date`}
+- \input{header.tex}
+longtable: yes
+mainfont: Arial
+bibliography: Protocol.bib
+params:
+  date: '2021-03-20'
+  version: 1.0.0
+subtitle: 'Version: `r params$version`'
+link-citations: true
+csl: jamia.csl
+---
+    
+    ```{r setup, include=FALSE}
+  knitr::opts_chunk$set(echo = TRUE)
+  options(kableExtra.latex.load_packages = FALSE)
+  library(kableExtra)
+  #knitr::knit_hooks$set(document = function(x) {sub('\\usepackage[]{color}', '\\usepackage[table]{xcolor}', x, fixed = TRUE)})
+  library(dplyr)
+  options(knitr.kable.NA = "")
+  if (!knitr::is_latex_output() && !knitr::is_html_output()) {
+    options(knitr.table.format = "simple")
+  }
+  pdf2png <- function(path) {
+    # only do the conversion for non-LaTeX output
+    if (knitr::is_latex_output()) {
+      return(path)
+    }
+    path2 <- xfun::with_ext(path, "png")
+    img <- magick::image_read_pdf(path)
+    magick::image_write(img, path2, format = "png")
+    path2
+  }
+  latex_table_font_size <- 8
+  #source("PrintCohortDefinitions.R")
+  #numberOfNcs <- nrow(readr::read_csv("../inst/settings/NegativeControls.csv", col_types = readr::cols()))
+  ```
+  
+  # List of Abbreviations
+  
+  ```{r abbreviations, echo=FALSE, results="asis", warning=FALSE}
+  abbreviations <- readr::read_delim(col_names = FALSE, delim = ";", trim_ws = TRUE, file = "
+  AUC; Area Under the receiver-operator Curve 
+  CCAE; IBM MarketScan Commercial Claims and Encounters 
+  CDM; Common Data Model
+  COVID-19; COronaVIrus Disease 2019
+  CRAN; Comprehensive R Archive Network
+  EHR; Electronic Health Record
+  H1N1; Hemagglutinin Type 1 and Neuraminidase Type 1 (influenza strain, aka swine flu)
+  IRB; Institutional review board
+  JMDC; Japan Medical Data Center
+  MDCR; IBM MarketScan Medicare Supplemental Database
+  MDCD; IBM MarketScan Multi-State Medicaid Database 
+  OHDSI; Observational Health Data Science and Informatics
+  OMOP; Observational Medical Outcomes Partnership
+")
+  tab <- kable(abbreviations, col.names = NULL, linesep = "", booktabs = TRUE)
+  if (knitr::is_latex_output()) {
+    tab %>% kable_styling(latex_options = "striped", font_size = latex_table_font_size)
+  } else {
+    tab %>% kable_styling(bootstrap_options = "striped")
+  } 
+  ```
+  
+  # Responsible Parties
+  
+  ## Investigators
+  
+  ```{r parties, echo=FALSE, results="asis", warning=FALSE}
+  parties <- readr::read_delim(col_names = TRUE, delim = ";", trim_ws = TRUE, file = "
+  Investigator; Institution/Affiliation
+  Jenna Reps *; Observational Health Data Analytics, Janssen Research and Development, Titusville, NJ, USA 
+  Patrick B. Ryan; Observational Health Data Analytics, Janssen Research and Development, Titusville, NJ, USA
+")
+  tab <- kable(parties, booktabs = TRUE, linesep = "") %>% 
+    column_spec(1, width = "10em") %>%
+    column_spec(2, width = "30em") %>%
+    footnote(general = "* Principal Investigator", general_title = "")
+  if (knitr::is_latex_output()) {
+    tab %>% kable_styling(latex_options = "striped", font_size = latex_table_font_size)
+  } else {
+    tab %>% kable_styling(bootstrap_options = "striped")
+  }
+  ```
+  
+  ## Disclosures
+  
+  This study is undertaken within Observational Health Data Sciences and Informatics (OHDSI), an open collaboration.
+  **JMR** and **PBR** are employees of Janssen Research and Development and shareholders in John & Johnson.
+  
+  # Abstract
+  
+  **Background and Significance**
+    
+    The ability to predict which patients are at risk of COVID-19 vaccine outcomes that are of interest could be used to indentify which patients should be prioritise for monitoring after vaccination.  Patient-level prediction models can not be used to identify causality, so such models do not tell us whether the vaccine causes the outcome, but they can tell us at the point a patient is about to recieve a vaccine, what is their risk of experiencing the outcome of interest. 
+  
+  Various outcomes of interest have been identified for the COVID-19 vaccination and there are multiple potential phenotypes that can be used to identify patients with the outcome in real-world observational data.  It is currently unknown which phenotype is best per outcome and whether the phenotype impacts a model development. To ensure we are developing the most suitable models we need to perform analysis into the impact that the phenotype has on a prediction model.  The number of patients with a COVID-19 vaccination in real-world data will be small when the vaccines first start to be rolled out and the vaccine may be given to certain populations initially (e.g. patients at a higher risk COVID-19 complications).  Therefore large proxy target populations may be required to train complex machine learning models.  An investigation into the tranportability of models developed usign different target populations will help determine which proxy is most suitable and any limitations of using a proxy.
+  
+  **Study Aims**
+    
+    To study the impact of outcome phenotype on model performance across databases and phenotypes and the suitability of using large proxy target populations.  Answering these two questions will then guide us to develop quality COVID-19 vaccination patient-level prediction models.
+  
+  **Study Description**
+    
+  * Design: Retrospecive cohort with external validation  
+  * Target Populations: Random visit 2017-2019, Influenza visit 2017-2019, Jan 1st 2017-2019
+  * Outcomes: selected adverse events of special interest with various phenotypes
+  * Time-at-risk: 
+    1) 0 days to 365 days 
+  * Covariates
+    1) Demographics (age in 5 year buckets + gender)
+    2) Demographics + Conditions + Drugs -1 days to -365 days relative to index
+  * Models:
+    LASSO Logistic Regression
+  * Internal Metrics:
+    - Area Under the receiver-operator Curve (AUC).
+    - Sensitivity and PPV at a range of thresholds.
+    - Calibration Plots  
+    - Net Benefit
+  * External Metrics:
+    - Area Under the receiver-operator Curve (AUC).
+    - Sensitivity and PPV at a range of thresholds.
+    - Calibration Plots  (pre and post recalibration)
+    - Net Benefit (pre and post recalibration)
+    
+  For each outcome models will be developed per possible combination of <target population, phenotype, database> and will then be externally validated across all other combinations.
+
+
+# Amendments and Updates
+
+```{r amendments, echo=FALSE, results="asis", warning=FALSE}
+amendments <- readr::read_delim(col_names = TRUE, delim = ";", trim_ws = TRUE, file = "
+  Number; Date; Section of study protocol; Amendment or update; Reason
+  None;;;; 
+")
+tab <- kable(amendments, booktabs = TRUE, linesep = "")
+if (knitr::is_latex_output()) {
+  tab %>% kable_styling(latex_options = "striped", font_size = latex_table_font_size)
+} else {
+  tab %>% kable_styling(bootstrap_options = "striped")
+}
+```
+
+# Milestones
+
+```{r dates, echo=FALSE, results="asis", warning=FALSE}
+dates <- readr::read_delim(col_names = TRUE, delim = ";", trim_ws = TRUE, file = "
+  Milestone; Planned / actual date
+  Start of analysis;
+  End of analysis;
+  Results presentation;
+")
+tab <- kable(dates, booktabs = TRUE, linesep = "") 
+if (knitr::is_latex_output()) {
+  tab %>% kable_styling(latex_options = "striped", font_size = latex_table_font_size)
+} else {
+  tab %>% kable_styling(bootstrap_options = "striped")
+}
+```
+
+# Rationale and Background
+
+The ability to predict which patients are at risk of COVID-19 vaccine outcomes that are of interest could be used to indentify which patients to monitor after vaccination.  Patient-level prediction models can not be used to identify causality, so such models do not tell us whether the vaccine causes the outcome, but they can tell us at the point a patient is about to recieve a vaccine, what is their risk of each outcome of interest.
+    
+A common critism of using large observational healthcare datasets for the development of patient-level prediction models is the quality of the phenotypes used to indentify the occurence of the outcome in the data.  It is likely that outcome phenotypes miss some patients who have an outcome during the prediction time-at-risk or incorrectly idenitfy some patients who do not have the outcome. This prompts the question - how stable are prediction model across outcome definitions? Answering this question may help us develop improved COVID-19 vaccine models.
+    
+Another concern of patient-level prediction models is how models developed in certain populations and at certain time-points transport to new populations and time-points.  At the early stages of the COVID-19 vaccine rollout, we are unlikely to have sufficient data to develop quality models, but maybe we can identify suitable lerge proxy target populations and time-points.
+
+# Study Objectives
+
+The overarching aim is to identify the best practices for selecting the target population and outcome phenotype to develop patient-level prediction models that can be applied when patients are administrated a COVID-19 vaccine using observational, real-world data.
+
+Specific aims:
+  
+- To determine how stable prediction models are across outcome phenotypes and databases
+- To determine how stable prediction models when the target population changes 
+- To use this research to develop quality COVID-19 vaccine patient-level prediction models and discover potential limitations when using this in clincal practice
+
+# Research Methods
+
+## Target Populations
+
+The study will focus on three possible target populations (large potential proxies for the COVID-19 vaccinated population), as shown in Table \@ref(tab:targets-of-interest).
+
+```{r targets-of-interest, echo=FALSE, warning=FALSE}
+eois <- readr::read_csv(system.file("settings", "TargetsOfInterest.csv", package = "CovidVaccinePrediction"), col_types = readr::cols()) %>%
+  select(cohortName, cohortDescription)
+colnames(eois) <- SqlRender::camelCaseToTitleCase(colnames(eois))
+tab <- eois %>%
+  kable(booktabs = TRUE, linesep = "",
+      caption = "Target Population.") %>% 
+  kable_styling(bootstrap_options = "striped", latex_options = "striped")
+if (knitr::is_latex_output()) {
+  tab %>%
+    column_spec(1, width = "8em") %>%
+    column_spec(2, width = "18em") %>%
+    kable_styling(font_size = latex_table_font_size)
+} else {
+  tab
+}
+```
+
+
+## Outcomes and Time-at-risk
+
+The study will focus on six outcomes with multiple phenotypes per outcome, as shown in Table \@ref(tab:outcomes-of-interest).
+
+```{r outcomes-of-interest, echo=FALSE, warning=FALSE}
+eois <- readr::read_csv(system.file("settings", "OutcomesOfInterest.csv", package = "CovidVaccinePrediction"), col_types = readr::cols()) %>%
+  select(outcome, cohortName, cohortDescription, timeAtRisk)
+colnames(eois) <- SqlRender::camelCaseToTitleCase(colnames(eois))
+tab <- eois %>%
+  kable(booktabs = TRUE, linesep = "",
+      caption = "Outcome of interest.") %>% 
+  kable_styling(bootstrap_options = "striped", latex_options = "striped")
+if (knitr::is_latex_output()) {
+  tab %>%
+    column_spec(1, width = "8em") %>%
+    column_spec(2, width = "8em") %>%
+    column_spec(3, width = "18em") %>%
+    column_spec(4, width = "8em") %>%
+    kable_styling(font_size = latex_table_font_size)
+} else {
+  tab
+}
+```
+
+
+## Models
+
+In this study we will focus on using a LASSO logistic regression model.  We will use 3-fold cross-validation on a 75% train set to select the optimal varience (amount of reguarlization) and use a 25% test set for internal validation performance estimation.
+
+## Candidate Covariates
+
+- Settings 1 (benchmark): Gender and age in 5-year buckets
+- Setting 2 (full model): Gender and age in 5-year buckets, conditions in prior 365 days, drugs in prior 365 days.
+
+We will train models with two sets of candidate covariates.  The first models will use age and gender only, if this models performs well then we can develop very simple models.  The second model will also include any condition/drug recorded in the 365 days prior to index up to 1 day prior to index.  Comparing the performance of the full and benchmark models will tell us how useful non-age and gender covariates are.
+
+## Metrics
+
+We will evaluate the performance by calculating the area under the receiver operating characteristic curve for overal discrimination and calibration plots for calibration.  We will also calculate the area under the precision recall curve and net benefit plots.  Threshold dependent performance will be displayed using the probability threshold plot.
+
+## Data sources
+
+We will execute the study as an OHDSI network study.
+All data partners within OHDSI are encouraged to participate voluntarily and can do so conveniently, because of the community's shared Observational Medical Outcomes Partnership (OMOP) common data model (CDM) and OHDSI tool-stack.
+Many OHDSI community data partners have already committed to participate and we will recruit further data partners through OHDSI’s standard recruitment process, which includes protocol publication on OHDSI’s GitHub, an announcement in OHDSI’s research forum, presentation at the weekly OHDSI all-hands-on meeting and direct requests to data holders.
+
+Table \@ref(tab:data-sources) lists the 5 already committed data sources for EUMAEUS; these sources encompass a large variety of practice types and populations. 
+For each data source, we report a brief description and size of the population it represents.
+All data sources will receive institutional review board approval or exemption for their participation before executing the study.
+
+```{r data-sources, echo=FALSE, warning=FALSE}
+data_sources <- readr::read_delim(col_names = TRUE, delim = ";", trim_ws = TRUE, file = "
+  Data source ; Population ; Patients ; History ; Data capture process and short description
+  IBM MarketScan Commercial Claims and Encounters (CCAE) ; Commercially insured, < 65 years ; 142M ; 2000 -- ; Adjudicated health insurance claims (e.g. inpatient, outpatient, and outpatient pharmacy)  from large employers and health plans who provide private healthcare coverage to employees, their spouses and dependents.
+  IBM MarketScan Medicare Supplemental Database (MDCR)  ; Commercially insured, 65$+$ years ; 10M ; 2000 -- ; Adjudicated health insurance claims of retirees with primary or Medicare supplemental coverage through privately insured fee-for-service, point-of-service or capitated health plans.
+  IBM MarketScan Multi-State Medicaid Database (MDCD) ; Medicaid enrollees, racially diverse ; 26M ; 2006 -- ; Adjudicated health insurance claims for Medicaid enrollees from multiple states and includes hospital discharge diagnoses, outpatient diagnoses and procedures, and outpatient pharmacy claims.
+  Optum Clinformatics Data Mart (Optum) ; Commercially or Medicare insured ; 85M ; 2000 -- ; Inpatient and outpatient healthcare insurance claims.
+  Optum Electronic Health Records (OptumEHR) ; US, general ; 93M ; 2006 -- ; Clinical information, prescriptions, lab results, vital signs, body measurements, diagnoses and procedures derived from clinical notes using natural language processing. 
+")
+tab <- kable(data_sources, booktabs = TRUE, linesep = "",
+      caption = "Committed  data sources and the populations they cover.") %>% 
+  kable_styling(bootstrap_options = "striped", latex_options = "striped") %>%
+  pack_rows("Administrative claims", 1, 4, latex_align = "c", indent = FALSE) %>%
+  pack_rows("Electronic health records (EHRs)", 5, 5, latex_align = "c", indent = FALSE)
+if (knitr::is_latex_output()) {
+  tab %>%
+    column_spec(1, width = "10em") %>%
+    column_spec(2, width = "10em") %>%
+    column_spec(5, width = "25em") %>%
+    kable_styling(font_size = latex_table_font_size)
+} else {
+  tab
+}
+```
+
+## Development and Evaluation Overview 
+
+For each of the 5 outcomes of interest we will train models for the 3 target populations x 2 covariate settings x 3 phenotype version x 5 databases = 450 models being developed.
+
+To investigate the impact of outcome phenotype, for each model we will implement it in the development data with the 2 different phenotypes and then externally across the 3 phenotypes x 4 external databases = 14 times.  This will require 6,300 validations.
+
+To investigate the impact of target population, for each model we will implement it in the development data with the 2 different target populations and then externally across the 3 target population x 4 external databases = 14 times.  This will require 6,300 validations.
+
+In total we will have 450 models developed and tested and 12,600 validations using different settings or databases.
+
+# Strengths and Limitations
+
+## Strengths
+
+- We follow the PatientLevelPrediction framework for developing and evaluating models to ensure best practices are applied
+- Our standardized framework enables us to externally validate our models accross a large number of external databases 
+- The fully specified study protocol is being published before analysis begins.
+- All analytic methods have previously been verified on real data.
+- All software is freely available as open source.
+- Use of a common data model allows extension of the experiment to future databases and allows replication of these results on licensable databases that were used in this experiment, while still maintaining patient privacy on patient-level data.
+
+## Limitations
+
+- We do not know the true sensitvity/specificity of each phenotype used in this study
+- We are unable to test our models in a clinical setting
+- In a clinically setting predictors may be self reported and these may differ from our covariate definitions
+- The electronic health record databases may be missing care episodes for patients due to care outside the respective health systems.
+- We only investigate LASSO logistic regression and it is unknown whether the results will generalize to other machine learning algorithms
+
+# Protection of Human Subjects
+
+This study does not involve human subjects research.
+The project does, however, use de-identified human data collected during routine healthcare provision.
+All data partners executing the study within their data sources will have received institutional review board (IRB) approval or waiver for participation in accordance to their institutional governance prior to execution (see Table \@ref(tab:irb)).
+This study executes across a federated and distributed data network, where analysis code is sent to participating data partners and only aggregate summary statistics are returned, with no sharing of patient-level data between organizations.
+
+```{r irb, echo=FALSE,warning=FALSE}
+data_sources <- readr::read_delim(col_names = TRUE, delim = "&", trim_ws = TRUE, file = "
+Data source & Statement
+IBM MarketScan Commercial Claims and Encounters (CCAE) & New England Institutional Review Board and was determined to be exempt from broad IRB approval, as this research project did not involve human subject research.
+IBM MarketScan Medicare Supplemental Database (MDCR)  & New England Institutional Review Board and was determined to be exempt from broad IRB approval, as this research project did not involve human subject research.
+IBM MarketScan Multi-State Medicaid Database (MDCD) & New England Institutional Review Board and was determined to be exempt from broad IRB approval, as this research project did not involve human subject research.
+Japan Medical Data Center (JMDC) & New England Institutional Review Board and was determined to be exempt from broad IRB approval, as this research project did not involve human subject research.
+Optum Clinformatics Data Mart (Optum) & New England Institutional Review Board and was determined to be exempt from broad IRB approval, as this research project did not involve human subject research.
+Optum Electronic Health Records (OptumEHR) & New England Institutional Review Board and was determined to be exempt from broad IRB approval, as this research project did not involve human subject research.
+")
+tab <- kable(data_sources, booktabs = TRUE, linesep = "",
+      caption = "IRB approval or waiver statement from partners.") %>% 
+  kable_styling(bootstrap_options = "striped", latex_options = "striped")
+if (knitr::is_latex_output()) {
+  tab %>%
+    column_spec(1, width = "15em") %>%
+    column_spec(2, width = "40em") %>%
+    kable_styling(font_size = latex_table_font_size)
+} else {
+  tab
+}
+```
+
+# Plans for Disseminating and Communicating Study Results
+
+Open science aims to make scientific research, including its data process and software, and its dissemination, through publication and presentation, accessible to all levels of an inquiring society, amateur or professional [@Woelfle2011-ss] and is a governing principle of this study.
+Open science delivers reproducible, transparent and reliable evidence.
+All aspects of this study (except private patient data) will be open and we will actively encourage other interested researchers, clinicians and patients to participate.
+This differs fundamentally from traditional studies that rarely open their analytic tools or share all result artifacts, and inform the community about hard-to-verify conclusions at completion.
+
+## Transparent and re-usable research tools
+
+We will publicly register this protocol and announce its availability for feedback from stakeholders, the OHDSI community and within clinical professional societies.
+This protocol will link to open source code for all steps to generate and evaluate prediction models, figures and tables.
+Such transparency is possible because we will construct our studies on top of the OHDSI toolstack of open source software tools that are community developed and rigorously tested [@Schuemie2020-wx].
+We will publicly host the source code at (https://github.com/ohdsi-studies/CovidVaccinePrediction), allowing public contribution and review, and free re-use for anyone’s future research.
+
+## Scientific meetings and publications
+
+We will deliver multiple presentations at scientific venues and will also prepare multiple scientific publications for clinical, informatics and statistical journals.
+
+## General public
+
+We believe in sharing our findings that will guide clinical care with the general public.
+We will use social-media (Twitter) to facilitate this.
+
+

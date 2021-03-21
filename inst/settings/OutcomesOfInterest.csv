@@ -1,0 +1,29 @@
+outcome, cohortName, cohortDescription, timeAtRisk
+Acute Myocardial Infarction,AcuteMyocardialInfarction, ..., index + 0 days to index + 365 days
+Acute Myocardial Infarction,AMI_IP, ..., index + 0 days to index + 365
+Acute Myocardial Infarction,AMI_IP_FDA, ..., index + 0 days to index + 365
+Anaphylaxis,Anaphylaxis, ..., index + 0 days to index + 365
+Anaphylaxis,Anaphylaxis IPED, ..., index + 0 days to index + 365
+Anaphylaxis,Anaphylaxis FDA, ..., index + 0 days to index + 365
+Appendicitis,Appendicitis, ..., index + 0 days to index + 365
+Appendicitis,Appendicitis IP, ..., index + 0 days to index + 365
+Appendicitis,Appendicitis FDA, ..., index + 0 days to index + 365
+DisIntraCoag,DisIntraCoag, ..., index + 0 days to index + 365
+DisIntraCoag,DisIntraCoag_IP, ..., index + 0 days to index + 365
+DisIntraCoag,DisIntraCoag_FDA, ..., index + 0 days to index + 365
+Encephalomyelitis,Encephalomyelitis, ..., index + 0 days to index + 365
+Encephalomyelitis,Encephalomyelitis IP, ..., index + 0 days to index + 365
+Encephalomyelitis,Encephalomyelitis IP FDA, ..., index + 0 days to index + 365
+Hemorrhagic Stroke,HemorrhagicStroke, ..., index + 0 days to index + 365
+Hemorrhagic Stroke,HemorrhagicStroke IP, ..., index + 0 days to index + 365
+Hemorrhagic Stroke,HemorrhagicStroke IP FDA, ..., index + 0 days to index + 365
+Non Hemorrhagic Stroke,NonHemorrhagicStroke, ..., index + 0 days to index + 365
+Non Hemorrhagic Stroke,NonHemorrhagicStroke IP, ..., index + 0 days to index + 365
+Non Hemorrhagic Stroke,NonHemorrhagicStroke IP FDA, ..., index + 0 days to index + 365
+Non Hemorrhagic Stroke,NonHemorrhagicStroke broad, ..., index + 0 days to index + 365
+Pulmonary Embolism,PulmonaryEmbolism, ..., index + 0 days to index + 365
+Pulmonary Embolism,PulmonaryEmbolism IP, ..., index + 0 days to index + 365
+Pulmonary Embolism,PulmonaryEmbolism FDA, ..., index + 0 days to index + 365
+Guillain Barre Syndrome,GuillainBarreSyndrome, ..., index + 0 days to index + 365
+Guillain Barre Syndrome,GuillainBarreSyndrome IP, ..., index + 0 days to index + 365
+Guillain Barre Syndrome,GBS_IP_Primary, ..., index + 0 days to index + 365
