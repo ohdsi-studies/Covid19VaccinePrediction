@@ -149,7 +149,7 @@ csl: jamia.csl
   **Study Description**
     
   * Design: Retrospecive cohort with external validation  
-  * Target Populations: Random visit 2017-2019, Influenza visit 2017-2019, Jan 1st 2017-2019
+  * Target Populations: Random visit 2017, Influenza visit 2017, Jan 1st 2017
   * Outcomes: selected adverse events of special interest with various phenotypes
   * Time-at-risk: 
     1) 0 days to 365 days 
@@ -249,7 +249,7 @@ if (knitr::is_latex_output()) {
 
 ## Outcomes and Time-at-risk
 
-The study will focus on six outcomes with multiple phenotypes per outcome, as shown in Table \@ref(tab:outcomes-of-interest).
+The study will focus on nine outcomes with multiple phenotypes per outcome, as shown in Table \@ref(tab:outcomes-of-interest).
 
 ```{r outcomes-of-interest, echo=FALSE, warning=FALSE}
 eois <- readr::read_csv(system.file("settings", "OutcomesOfInterest.csv", package = "CovidVaccinePrediction"), col_types = readr::cols()) %>%
@@ -324,13 +324,13 @@ if (knitr::is_latex_output()) {
 
 ## Development and Evaluation Overview 
 
-For each of the 5 outcomes of interest we will train models for the 3 target populations x 2 covariate settings x 3 phenotype version x 5 databases = 450 models being developed.
+For each of the 9 outcomes of interest we will train models for the 3 target populations x 2 covariate settings x 3 phenotype version x 5 databases = 810 models being developed.
 
-To investigate the impact of outcome phenotype, for each model we will implement it in the development data with the 2 different phenotypes and then externally across the 3 phenotypes x 4 external databases = 14 times.  This will require 6,300 validations.
+To investigate the impact of outcome phenotype, for each model we will implement it in the development data with the 2 different phenotypes and then externally across the 3 phenotypes x 4 external databases = 14 times.  This will require 11,340 validations.
 
-To investigate the impact of target population, for each model we will implement it in the development data with the 2 different target populations and then externally across the 3 target population x 4 external databases = 14 times.  This will require 6,300 validations.
+To investigate the impact of target population, for each model we will implement it in the development data with the 2 different target populations and then externally across the 3 target population x 4 external databases = 14 times.  This will require 11,340 validations.
 
-In total we will have 450 models developed and tested and 12,600 validations using different settings or databases.
+In total we will have 810 models developed and tested and 22,680 validations using different settings or databases.
 
 # Strengths and Limitations
 

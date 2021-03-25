@@ -35,53 +35,6 @@ from
   		  group by de1.person_id
   ) t1
   on t0.subject_id = t1.person_id  
-
-	union all
-
-
-  select t0.subject_id, t1.vaccine_date as cohort_start_date, t1.vaccine_date as cohort_end_date 
-  from
-  (
-    select op1.person_id as subject_id, datefromparts(2018,1,1) as cohort_start_date, datefromparts(2018,1,1) as cohort_end_date
-    from @cdm_database_schema.observation_period op1
-    where dateadd(dd,365,op1.observation_period_start_date) <= datefromparts(2018,1,1)
-    and op1.observation_period_end_date >= datefromparts(2018,1,1)
-  ) t0
-  inner join
-  (
-  	   select de1.person_id, min(drug_exposure_start_date) as vaccine_date
-  		  from @cdm_database_schema.drug_exposure de1
-  		  inner join #flu_vaccines wp1
-  		  on de1.drug_concept_id = wp1.concept_id 
-  		  where drug_exposure_start_date >= '1/1/2018'
-  		  and drug_exposure_start_date < '1/1/2019'
-  		  group by de1.person_id
-  ) t1
-  on t0.subject_id = t1.person_id   
-
-
-	 union all
-
-
-  select t0.subject_id, t1.vaccine_date as cohort_start_date, t1.vaccine_date as cohort_end_date 
-  from
-  (
-    select op1.person_id as subject_id, datefromparts(2019,1,1) as cohort_start_date, datefromparts(2019,1,1) as cohort_end_date
-    from @cdm_database_schema.observation_period op1
-    where dateadd(dd,365,op1.observation_period_start_date) <= datefromparts(2019,1,1)
-    and op1.observation_period_end_date >= datefromparts(2019,1,1)
-  ) t0
-  inner join
-  (
-  	   select de1.person_id, min(drug_exposure_start_date) as vaccine_date
-  		  from @cdm_database_schema.drug_exposure de1
-  		  inner join #flu_vaccines wp1
-  		  on de1.drug_concept_id = wp1.concept_id 
-  		  where drug_exposure_start_date >= '1/1/2019'
-  		  and drug_exposure_start_date < '1/1/2020'
-  		  group by de1.person_id
-  ) t1
-  on t0.subject_id = t1.person_id   
 ) t3
 ;
 

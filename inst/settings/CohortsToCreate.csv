@@ -1,7 +1,7 @@
 cohortId,atlasId,name
-1001,1001,1JAN 2017-2019
-2001,2001,flu vaccine 2017-2019
-3001,3001,random visit 2017-2019
+1001,1001,1JAN 2017
+2001,2001,flu vaccine 2017
+3001,3001,random visit 2017
 1002,1002,AcuteMyocardialInfarction
 2002,2002,AMI_IP
 3002,3002,AMI_IP_FDA

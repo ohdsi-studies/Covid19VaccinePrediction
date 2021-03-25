@@ -12,21 +12,9 @@ execute(
   cohortTable = "cohort",
   oracleTempSchema = cohortDatabaseSchema,
   outputFolder,
-  createProtocol = F,
   createCohorts = F,
-  runDiagnostic = F,
-  viewDiagnostic = F,
-  runAnalyses = F,
-  createResultsDoc = F,
-  createValidationPackage = F,
-  skeletonVersion = "v1.0.1",
-  analysesToValidate = NULL,
-  packageResults = F,
-  minCellCount = 5,
-  createShiny = F,
-  createJournalDocument = F,
-  analysisIdDocument = 1,
-  onlyFetchData = F,
+  fetchData = F,
+  runDevelopment = F,
   sampleSize = NULL,
   verbosity = "INFO",
   cdmVersion = 5
@@ -58,37 +46,11 @@ priviliges for storing temporary tables.}
 (/). Do not use a folder on a network drive since this greatly impacts
 performance.}
 
-\item{createProtocol}{Creates a protocol based on the analyses specification}
-
 \item{createCohorts}{Create the cohortTable table with the target population and outcome cohorts?}
 
-\item{runDiagnostic}{Runs a diagnostic of the T, O and tar settings for the cdmDatabaseSchema - can be used to check whether to change 
-settings or whether the prediction may not do well.}
+\item{fetchData}{Only fetch data for the analyses without fitting models. Setting this flag will overwrite your input provided to the runAnalyses and createCohorts parameters.}
 
-\item{viewDiagnostic}{Opens a shiny app with the diagnostic results (run after runDiagnostic completes)}
-
-\item{runAnalyses}{Run the model development}
-
-\item{createResultsDoc}{Create a document containing the results of each prediction}
-
-\item{createValidationPackage}{Create a package for sharing the models}
-
-\item{skeletonVersion}{The version of the validation skeleton to use}
-
-\item{analysesToValidate}{A vector of analysis ids (e.g., c(1,3,10)) specifying which analysese to export into validation package. Default is NULL and all are exported.}
-
-\item{packageResults}{Should results be packaged for later sharing?}
-
-\item{minCellCount}{The minimum number of subjects contributing to a count before it can be included 
-in packaged results.}
-
-\item{createShiny}{Create a shiny app with the results}
-
-\item{createJournalDocument}{Do you want to create a template journal document populated with results?}
-
-\item{analysisIdDocument}{Which Analysis_id do you want to create the document for?}
-
-\item{onlyFetchData}{Only fetch data for the analyses without fitting models. Setting this flag will overwrite your input provided to the runAnalyses and createCohorts parameters.}
+\item{runDevelopment}{Run the model development}
 
 \item{sampleSize}{The number of patients in the target cohort to sample (if NULL uses all patients)}
 
@@ -103,12 +65,14 @@ in packaged results.}
 }}
 
 \item{cdmVersion}{The version of the common data model}
+
+\item{createProtocol}{Creates a protocol based on the analyses specification}
 }
 \description{
 Execute the Study
 }
 \details{
-This function executes the SkeletonPredictionStudy Study.
+This function executes the CovidVaccinePrediction Study.
 }
 \examples{
 \dontrun{
@@ -124,17 +88,9 @@ execute(connectionDetails,
         cohortTable = "cohort",
         oracleTempSchema = NULL,
         outputFolder = "c:/temp/study_results", 
-        createProtocol = T,
         createCohorts = T,
-        runDiagnostic = F,
-        viewDiagnostic = F,
-        runAnalyses = T,
-        createResultsDoc = T,
-        createValidationPackage = T,
-        skeletonVersion = 'v1.0.1',
-        packageResults = F,
-        minCellCount = 5,
-        createShiny = F,
+        fetchData = T,
+        runDevelopment = T,
         sampleSize = 10000,
         verbosity = "INFO",
         cdmVersion = 5)
