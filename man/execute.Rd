@@ -6,15 +6,16 @@
 \usage{
 execute(
   connectionDetails,
-  cdmDatabaseSchema,
-  cdmDatabaseName = "friendly database name",
-  cohortDatabaseSchema = cdmDatabaseSchema,
-  cohortTable = "cohort",
+  cdmDatabaseSchemas,
+  cdmDatabaseNames = "friendly database name",
+  cohortDatabaseSchemas = cdmDatabaseSchema,
+  cohortTables = "cohort",
   oracleTempSchema = cohortDatabaseSchema,
   outputFolder,
   createCohorts = F,
   fetchData = F,
   runDevelopment = F,
+  runValidate = F,
   sampleSize = NULL,
   verbosity = "INFO",
   cdmVersion = 5
@@ -25,17 +26,15 @@ execute(
 \code{\link[DatabaseConnector]{createConnectionDetails}} function in the
 DatabaseConnector package.}
 
-\item{cdmDatabaseSchema}{Schema name where your patient-level data in OMOP CDM format resides.
+\item{cdmDatabaseSchemas}{Schema name where your patient-level data in OMOP CDM format resides.
 Note that for SQL Server, this should include both the database and
 schema name, for example 'cdm_data.dbo'.}
 
-\item{cdmDatabaseName}{Shareable name of the database}
-
-\item{cohortDatabaseSchema}{Schema name where intermediate data can be stored. You will need to have
+\item{cohortDatabaseSchemas}{Schema name where intermediate data can be stored. You will need to have
 write priviliges in this schema. Note that for SQL Server, this should
 include both the database and schema name, for example 'cdm_data.dbo'.}
 
-\item{cohortTable}{The name of the table that will be created in the work database schema.
+\item{cohortTables}{The name of the table that will be created in the work database schema.
 This table will hold the target population cohorts used in this
 study.}
 
@@ -52,6 +51,8 @@ performance.}
 
 \item{runDevelopment}{Run the model development}
 
+\item{runValidate}{Run the model validation}
+
 \item{sampleSize}{The number of patients in the target cohort to sample (if NULL uses all patients)}
 
 \item{verbosity}{Sets the level of the verbosity. If the log level is at or higher in priority than the logger threshold, a message will print. The levels are:
@@ -65,6 +66,8 @@ performance.}
 }}
 
 \item{cdmVersion}{The version of the common data model}
+
+\item{cdmDatabaseNamess}{Shareable name of the database}
 
 \item{createProtocol}{Creates a protocol based on the analyses specification}
 }
@@ -82,10 +85,10 @@ connectionDetails <- createConnectionDetails(dbms = "postgresql",
                                              server = "myserver")
 
 execute(connectionDetails,
-        cdmDatabaseSchema = "cdm_data",
-        cdmDatabaseName = 'shareable name of the database'
-        cohortDatabaseSchema = "study_results",
-        cohortTable = "cohort",
+        cdmDatabaseSchemas = "cdm_data",
+        cdmDatabaseNames = 'shareable name of the database'
+        cohortDatabaseSchemas = "study_results",
+        cohortTables = "cohort",
         oracleTempSchema = NULL,
         outputFolder = "c:/temp/study_results", 
         createCohorts = T,

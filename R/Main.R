@@ -22,14 +22,14 @@
 #' @param connectionDetails    An object of type \code{connectionDetails} as created using the
 #'                             \code{\link[DatabaseConnector]{createConnectionDetails}} function in the
 #'                             DatabaseConnector package.
-#' @param cdmDatabaseSchema    Schema name where your patient-level data in OMOP CDM format resides.
+#' @param cdmDatabaseSchemas    Schema name where your patient-level data in OMOP CDM format resides.
 #'                             Note that for SQL Server, this should include both the database and
 #'                             schema name, for example 'cdm_data.dbo'.
-#' @param cdmDatabaseName      Shareable name of the database 
-#' @param cohortDatabaseSchema Schema name where intermediate data can be stored. You will need to have
+#' @param cdmDatabaseNamess      Shareable name of the database 
+#' @param cohortDatabaseSchemas Schema name where intermediate data can be stored. You will need to have
 #'                             write priviliges in this schema. Note that for SQL Server, this should
 #'                             include both the database and schema name, for example 'cdm_data.dbo'.
-#' @param cohortTable          The name of the table that will be created in the work database schema.
+#' @param cohortTables          The name of the table that will be created in the work database schema.
 #'                             This table will hold the target population cohorts used in this
 #'                             study.
 #' @param oracleTempSchema     Should be used in Oracle to specify a schema where the user has write
@@ -41,6 +41,7 @@
 #' @param createCohorts        Create the cohortTable table with the target population and outcome cohorts?
 #' @param fetchData        Only fetch data for the analyses without fitting models. Setting this flag will overwrite your input provided to the runAnalyses and createCohorts parameters.
 #' @param runDevelopment          Run the model development
+#' @param runValidate          Run the model validation
 #' @param sampleSize           The number of patients in the target cohort to sample (if NULL uses all patients)
 #' @param verbosity            Sets the level of the verbosity. If the log level is at or higher in priority than the logger threshold, a message will print. The levels are:
 #'                                         \itemize{
@@ -61,10 +62,10 @@
 #'                                              server = "myserver")
 #'
 #' execute(connectionDetails,
-#'         cdmDatabaseSchema = "cdm_data",
-#'         cdmDatabaseName = 'shareable name of the database'
-#'         cohortDatabaseSchema = "study_results",
-#'         cohortTable = "cohort",
+#'         cdmDatabaseSchemas = "cdm_data",
+#'         cdmDatabaseNames = 'shareable name of the database'
+#'         cohortDatabaseSchemas = "study_results",
+#'         cohortTables = "cohort",
 #'         oracleTempSchema = NULL,
 #'         outputFolder = "c:/temp/study_results", 
 #'         createCohorts = T,
@@ -77,15 +78,16 @@
 #'
 #' @export
 execute <- function(connectionDetails,
-                    cdmDatabaseSchema,
-                    cdmDatabaseName = 'friendly database name',
-                    cohortDatabaseSchema = cdmDatabaseSchema,
-                    cohortTable = "cohort",
+                    cdmDatabaseSchemas,
+                    cdmDatabaseNames = 'friendly database name',
+                    cohortDatabaseSchemas = cdmDatabaseSchema,
+                    cohortTables = "cohort",
                     oracleTempSchema = cohortDatabaseSchema,
                     outputFolder,
                     createCohorts = F,
                     fetchData = F,
                     runDevelopment = F,
+                    runValidate = F,
                     sampleSize = NULL,
                     verbosity = "INFO",
                     cdmVersion = 5) {
@@ -97,53 +99,126 @@ execute <- function(connectionDetails,
   
   
   if (createCohorts) {
-    ParallelLogger::logInfo("Creating cohorts")
-    createCohorts(connectionDetails = connectionDetails,
-                  cdmDatabaseSchema = cdmDatabaseSchema,
-                  cohortDatabaseSchema = cohortDatabaseSchema,
-                  cohortTable = cohortTable,
+    for(i in 1:length(cdmDatabaseNames)){
+    ParallelLogger::logInfo(paste0("Creating cohorts for ",cdmDatabaseNames[i]))
+    createCohorts(connectionDetails = connectionDetails[[i]],
+                  cdmDatabaseSchema = cdmDatabaseSchemas[i],
+                  cohortDatabaseSchema = cohortDatabaseSchemas[i],
+                  cohortTable = cohortTables[i],
                   oracleTempSchema = oracleTempSchema,
-                  outputFolder = outputFolder)
+                  outputFolder = file.path(outputFolder,cdmDatabaseNames[i])
+                  )
+    }
   }
   
   if(fetchData){
-    ParallelLogger::logInfo("Fetching data")
-
-    covSet <- FeatureExtraction::createCovariateSettings(useDemographicsGender = T, 
-                                                         useDemographicsAge = T, 
-                                                         useConditionGroupEraLongTerm = T, 
-                                                         useDrugGroupEraLongTerm = T, 
-                                                         longTermStartDays = -1, 
-                                                         endDays = -365)
-    for(targetId in c(1001,2001,3001)){
-      fileName <- file.path(outputFolder,'data', paste0('T_',targetId))
-      if(!dir.exists(fileName )){
-        dir.create(fileName, recursive = T)
+    
+    for(i in 1:length(cdmDatabaseNames)){
+      databaseName <- cdmDatabaseNames[i]
+      ParallelLogger::logInfo(paste0("Fetching data for ",databaseName))
+      
+      covSet <- FeatureExtraction::createCovariateSettings(useDemographicsGender = T, 
+                                                           useDemographicsAgeGroup  = T, 
+                                                           useConditionGroupEraLongTerm = T, 
+                                                           useDrugGroupEraLongTerm = T, 
+                                                           longTermStartDays = -1, 
+                                                           endDays = -365)
+      for(targetId in c(1001,2001,3001)){
+        fileName <- file.path(outputFolder,databaseName,'data', paste0('T_',targetId))
+        fileName2 <- file.path(outputFolder,databaseName,'data', paste0('T_',targetId,'_ag'))
+        if(!dir.exists(fileName )){
+          dir.create(fileName, recursive = T)
+        }
+        
+        if(!file.exists(file.path(fileName,'covariates'))){
+          ParallelLogger::logInfo(paste0('Extracting for ',targetId))
+          plpData <- tryCatch({PatientLevelPrediction::getPlpData(connectionDetails = connectionDetails[[i]], 
+                                                        cdmDatabaseSchema = cdmDatabaseSchemas[i], 
+                                                        oracleTempSchema = oracleTempSchema, 
+                                                        cohortId = targetId, 
+                                                        outcomeIds = c(1002,2002,3002,1003,2003,3003,1004,2004,3004,1005,2005,3005,1006,2006,3006,1007,2007,3007,4007,1008,2008,3008,1009,2009,4009,1010,2010,3010), 
+                                                        cohortDatabaseSchema = cohortDatabaseSchemas[i], 
+                                                        cohortTable = cohortTables[i], 
+                                                        outcomeDatabaseSchema = cohortDatabaseSchemas[i], 
+                                                        outcomeTable = cohortTables[i], 
+                                                        cdmVersion = cdmVersion, 
+                                                        covariateSettings = covSet, 
+                                                        washoutPeriod = 365, 
+                                                        firstExposureOnly = T, 
+                                                        sampleSize = 2000000)},
+                              error = function(e){ParallelLogger::logInfo(e);return(NULL)})
+          
+          if(!is.null(plpData)){
+            PatientLevelPrediction::savePlpData(plpData, fileName)
+          }
+        } else{
+          ParallelLogger::logInfo(paste0('Data exists for ',targetId))
+        }
+        
+        
+        # restrict to age/gender only data
+        if(!file.exists(file.path(fileName2,'covariates')) & file.exists(file.path(fileName,'covariates')) ){
+          ParallelLogger::logInfo(paste0('Creating age/gender only data for ',targetId))
+          plpData <- PatientLevelPrediction::loadPlpData(fileName)
+          
+          plpData$covariateData$covariateIO <- data.frame(covariateId = c(8532001, 8507001, (1:24)*1000+3))
+          plpData$covariateData$covariates <- plpData$covariateData$covariates %>% 
+            dplyr::inner_join(plpData$covariateData$covariateIO, by = 'covariateId')
+          
+          plpData$covariateData$covariateRef <- plpData$covariateData$covariateRef %>% 
+            dplyr::inner_join(plpData$covariateData$covariateIO, by = 'covariateId')
+          
+          PatientLevelPrediction::savePlpData(plpData, fileName2)
+          
+        } else{
+          ParallelLogger::logInfo(paste0('Age/gender data exists for ',targetId))
+        }
+        
       }
-      
-      plpData <- PatientLevelPrediction::getPlpData(connectionDetails = connectionDetails, 
-                                         cdmDatabaseSchema = cdmDatabaseSchema, 
-                                         oracleTempSchema = oracleTempSchema, 
-                                         cohortId = targetId, 
-                                         outcomeIds = c(1002,2002,3002,1003,2003,3003,1004,2004,3004,1005,2005,3005,1006,2006,3006,1007,2007,3007,4007,1008,2008,3008,1009,2009,4009,1010,2010,3010), 
-                                         cohortDatabaseSchema = cohortDatabaseSchema, 
-                                         cohortTable = cohortTable, 
-                                         outcomeDatabaseSchema = cohortDatabaseSchema, 
-                                         outcomeTable = cohortTable, 
-                                         cdmVersion = cdmVersion, 
-                                         covariateSettings = covSet, 
-                                         washoutPeriod = 365, 
-                                         firstExposureOnly = T, 
-                                         sampleSize = 1000000)
-      
-      PatientLevelPrediction::savePlpData(plpData, fileName)
     }
     
   }
   
   if(runDevelopment){
-    ParallelLogger::logInfo("Running predictions")
     
+    for(i in 1:length(cdmDatabaseNames)){
+      ParallelLogger::logInfo(paste0("Running predictions for ",cdmDatabaseNames[i]))
+      
+      targets <- c(1001,2001,3001)
+      outcomes <- list(c(1002,2002,3002),
+                       c(1003,2003,3003),
+                       c(1004,2004,3004),
+                       c(1005,2005,3005),
+                       c(1006,2006,3006),
+                       c(1007,2007,3007, 4007),
+                       c(1008,2008,3008),
+                       c(1009,2009,4009),
+                       c(1010,2010,3010))
+      
+      ParallelLogger::logInfo("Full Models")
+      developInPar(targets = targets,
+                   outcomes = outcomes,
+                   ageGenderOnly = F,
+                   outputFolder = outputFolder, 
+                   databaseName = cdmDatabaseNames[i],
+                   seed = 1022 )
+      
+      ParallelLogger::logInfo("Benchmark Models")
+      developInPar(targets = targets,
+                   outcomes = outcomes,
+                   ageGenderOnly = T,
+                   outputFolder = outputFolder, 
+                   databaseName = cdmDatabaseNames[i],
+                   seed = 1022 )
+    }
+    
+  }
+  
+  if(runValidate){
+ 
+    for(i in 1:length(cdmDatabaseNames)){
+      ParallelLogger::logInfo(paste0("Running validations for ",cdmDatabaseNames[i]))
+    # internal other Ts and other Os (create settings per models and valdiate in para)
     targets <- c(1001,2001,3001)
     outcomes <- list(c(1002,2002,3002),
                      c(1003,2003,3003),
@@ -154,13 +229,19 @@ execute <- function(connectionDetails,
                      c(1008,2008,3008),
                      c(1009,2009,4009),
                      c(1010,2010,3010))
+    internalValidateWrapper(resultLocation = outputFolder, 
+                            devDatabaseName = cdmDatabaseNames[i],
+                            phenotypeGroup = outcomes,
+                            targets = targets)
     
-    developInPar(targets = targets,
-                 outcomes = outcomes,
-                 outputFolder = outputFolder, 
-                 seed = 1022 )
-    
-  }
+    # external: all Ts and all phenos (need data location )
+    externalValidateWrapper(resultLocation = outputFolder, 
+                            devDatabaseName = cdmDatabaseNames[i],
+                            valDatabaseNames = cdmDatabaseNames[-i],
+                            phenotypeGroup = outcomes,
+                            targets = targets)
+      }
+    }
   
   invisible(NULL)
 }
