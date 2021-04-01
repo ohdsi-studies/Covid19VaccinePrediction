@@ -107,7 +107,7 @@ runPlpI <- function(settings){
 internalValidateWrapper <- function(resultLocation, devDatabaseName,phenotypeGroup,targets){
   
   
-  for(phenotypes in phenotypeGroups){
+  for(phenotypes in phenotypeGroup){
     for(phenotype in phenotypes){
       for(target in targets){
         
@@ -151,7 +151,7 @@ internalValidateInPar <- function(resultLocation, devDatabaseName, phenotypes, t
     colnames(dataToValidate) <- c('databaseName','outcomeId','T')
     
     # remove model data:
-    ind <- dataToValidate$outcomeId == phenotype && dataToValidate$T == target
+    ind <- dataToValidate$outcomeId == phenotype & dataToValidate$T == target
     dataToValidate <- dataToValidate[!ind,]
     
     dataToValidate$plpDataLoc <- file.path(resultLocation,dataToValidate$databaseName,'data', paste0('T_',dataToValidate$T,ifelse(benchmark,'_ag', '')))
@@ -163,7 +163,7 @@ internalValidateInPar <- function(resultLocation, devDatabaseName, phenotypes, t
     
     # create the cluster
     ParallelLogger::logInfo(paste0('Number of cores not specified'))
-    cores <- parallel::detectCores() - 1## set to max 
+    cores <- min(nrow(dataToValidate), parallel::detectCores() - 1)## set to max 
     ParallelLogger::logInfo(paste0('Using this many cores ', cores))
     ParallelLogger::logInfo(paste0('Set cores input to use fewer...'))
     
@@ -200,7 +200,7 @@ externalValidateWrapper <- function(resultLocation,
                                     targets){
   
   
-  for(phenotypes in phenotypeGroups){
+  for(phenotypes in phenotypeGroup){
     for(phenotype in phenotypes){
       for(target in targets){
         
@@ -258,7 +258,7 @@ externalValidateInPar <- function(resultLocation, devDatabaseName,
     
     # create the cluster
     ParallelLogger::logInfo(paste0('Number of cores not specified'))
-    cores <- parallel::detectCores() -1 ## set to max 
+    cores <- min(nrow(dataToValidate),parallel::detectCores() -1) ## set to max 
     ParallelLogger::logInfo(paste0('Using this many cores ', cores))
     ParallelLogger::logInfo(paste0('Set cores input to use fewer...'))
     
@@ -296,9 +296,16 @@ valPlpI <- function(settings){
     return(NULL)
   }
   
+  ParallelLogger::logInfo('Loading data and model')
   plpData <- PatientLevelPrediction::loadPlpData(settings$plpDataLoc)
-  plpResult <- PatientLevelPrediction::loadPlpData(settings$modelLoc)
+  plpResult <- PatientLevelPrediction::loadPlpResult(settings$modelLoc)
   
+  ParallelLogger::logInfo("Restricting data to model")
+  plpData$covariateData$model <- plpResult$covariateSummary[plpResult$covariateSummary$covariateValue !=0, 'covariateId']
+  plpData$covariateData$covariates <- plpData$covariateData$covariates %>% dplyr::inner_join(plpData$covariateData$model)
+  plpData$covariateData$model <- NULL
+  
+  ParallelLogger::logInfo('Running validation')
   popSet <- plpResult$inputSettings$populationSettings
   popSet$plpData = plpData
   popSet$outcomeId <- settings$outcomeId
