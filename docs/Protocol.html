@@ -3166,7 +3166,7 @@ Observational Health Data Analytics, Janssen Research and Development, Titusvill
 <ul>
 <li>Design: Retrospecive cohort with external validation
 <ul>
-<li>Target Populations: Random visit 2017-2019, Influenza visit 2017-2019, Jan 1st 2017-2019</li>
+<li>Target Populations: Random visit 2017, Influenza visit 2017, Jan 1st 2017</li>
 <li>Outcomes: selected adverse events of special interest with various phenotypes</li>
 <li>Time-at-risk:
 <ol style="list-style-type: decimal">
@@ -3313,10 +3313,10 @@ Cohort Description
 <tbody>
 <tr>
 <td style="text-align:left;">
-Set date 1st Jan 2017-2019
+Set date 1st Jan 2017
 </td>
 <td style="text-align:left;">
-This cohort contain all patients who were in the database on Janurary the 1st in 2017, 2018 or 2019. Their index date is the earliest 1st January between 2017-2019 they were in the database
+This cohort contain all patients who were in the database on Janurary the 1st in 2017. Their index date is 1st January 2017.
 </td>
 </tr>
 <tr>
@@ -3324,7 +3324,7 @@ This cohort contain all patients who were in the database on Janurary the 1st in
 Random visit 2017-2019
 </td>
 <td style="text-align:left;">
-This cohort contains all patients who had one or more visits during 2017, 2018 and 2019. Their index date is a randomly selected visit between 2017-2019
+This cohort contains all patients who had one or more visits during 2017. Their index date is a randomly selected visit during 2017.
 </td>
 </tr>
 <tr>
@@ -3332,7 +3332,7 @@ This cohort contains all patients who had one or more visits during 2017, 2018 a
 Flu vaccine 2017-2019
 </td>
 <td style="text-align:left;">
-This cohort contain all patients who had a flu vaccine recorded during 2017, 2018 or 2019. Their index date is the earliest flu vaccine date between 2017-2019
+This cohort contain all patients who had a flu vaccine recorded during 2017. Their index date is the earliest flu vaccine date in 2017.
 </td>
 </tr>
 </tbody>
@@ -3340,7 +3340,7 @@ This cohort contain all patients who had a flu vaccine recorded during 2017, 201
 </div>
 <div id="outcomes-and-time-at-risk" class="section level2">
 <h2><span class="header-section-number">7.2</span> Outcomes and Time-at-risk</h2>
-<p>The study will focus on six outcomes with multiple phenotypes per outcome, as shown in Table <a href="#tab:outcomes-of-interest">7.2</a>.</p>
+<p>The study will focus on nine outcomes with multiple phenotypes per outcome, as shown in Table <a href="#tab:outcomes-of-interest">7.2</a>.</p>
 <table class="table table-striped" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:outcomes-of-interest">Table 7.2: </span>Outcome of interest.
@@ -3905,10 +3905,10 @@ Clinical information, prescriptions, lab results, vital signs, body measurements
 </div>
 <div id="development-and-evaluation-overview" class="section level2">
 <h2><span class="header-section-number">7.7</span> Development and Evaluation Overview</h2>
-<p>For each of the 5 outcomes of interest we will train models for the 3 target populations x 2 covariate settings x 3 phenotype version x 5 databases = 450 models being developed.</p>
-<p>To investigate the impact of outcome phenotype, for each model we will implement it in the development data with the 2 different phenotypes and then externally across the 3 phenotypes x 4 external databases = 14 times. This will require 6,300 validations.</p>
-<p>To investigate the impact of target population, for each model we will implement it in the development data with the 2 different target populations and then externally across the 3 target population x 4 external databases = 14 times. This will require 6,300 validations.</p>
-<p>In total we will have 450 models developed and tested and 12,600 validations using different settings or databases.</p>
+<p>For each of the 9 outcomes of interest we will train models for the 3 target populations x 2 covariate settings x 3 phenotype version x 5 databases = 810 models being developed.</p>
+<p>To investigate the impact of outcome phenotype, for each model we will implement it in the development data with the 2 different phenotypes and then externally across the 3 phenotypes x 4 external databases = 14 times. This will require 11,340 validations.</p>
+<p>To investigate the impact of target population, for each model we will implement it in the development data with the 2 different target populations and then externally across the 3 target population x 4 external databases = 14 times. This will require 11,340 validations.</p>
+<p>In total we will have 810 models developed and tested and 22,680 validations using different settings or databases.</p>
 </div>
 </div>
 <div id="strengths-and-limitations" class="section level1">

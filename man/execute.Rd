@@ -30,6 +30,8 @@ DatabaseConnector package.}
 Note that for SQL Server, this should include both the database and
 schema name, for example 'cdm_data.dbo'.}
 
+\item{cdmDatabaseNames}{Shareable name of the database}
+
 \item{cohortDatabaseSchemas}{Schema name where intermediate data can be stored. You will need to have
 write priviliges in this schema. Note that for SQL Server, this should
 include both the database and schema name, for example 'cdm_data.dbo'.}
@@ -66,8 +68,6 @@ performance.}
 }}
 
 \item{cdmVersion}{The version of the common data model}
-
-\item{cdmDatabaseNamess}{Shareable name of the database}
 
 \item{createProtocol}{Creates a protocol based on the analyses specification}
 }
