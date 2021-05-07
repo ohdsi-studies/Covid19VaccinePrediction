@@ -1,4 +1,4 @@
-Evaluating the Sensitivity Of Prediction Model Development and Performnance Due To Phenotypes Applied To COVID-19 VACCINES
+Evaluating the Sensitivity Of Prediction Model Development and Performance Due To Phenotypes Applied To COVID-19 VACCINES
 =============
 
 <img src="https://img.shields.io/badge/Study%20Status-Started-blue.svg" alt="Study Status: Started">
