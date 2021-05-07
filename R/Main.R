@@ -101,7 +101,9 @@ execute <- function(connectionDetails,
   if (createCohorts) {
     for(i in 1:length(cdmDatabaseNames)){
     ParallelLogger::logInfo(paste0("Creating cohorts for ",cdmDatabaseNames[i]))
-    createCohorts(connectionDetails = connectionDetails[[i]],
+      createConnectionDetails <- DatabaseConnector::createConnectionDetails
+      connectionDetailsT <- do.call('createConnectionDetails',connectionDetails[[i]])
+    createCohorts(connectionDetails = connectionDetailsT,
                   cdmDatabaseSchema = cdmDatabaseSchemas[i],
                   cohortDatabaseSchema = cohortDatabaseSchemas[i],
                   cohortTable = cohortTables[i],
@@ -121,8 +123,8 @@ execute <- function(connectionDetails,
                                                            useDemographicsAgeGroup  = T, 
                                                            useConditionGroupEraLongTerm = T, 
                                                            useDrugGroupEraLongTerm = T, 
-                                                           longTermStartDays = -1, 
-                                                           endDays = -365)
+                                                           longTermStartDays = -365, 
+                                                           endDays = -1)
       for(targetId in c(1001,2001,3001)){
         fileName <- file.path(outputFolder,databaseName,'data', paste0('T_',targetId))
         fileName2 <- file.path(outputFolder,databaseName,'data', paste0('T_',targetId,'_ag'))
@@ -132,7 +134,9 @@ execute <- function(connectionDetails,
         
         if(!file.exists(file.path(fileName,'covariates'))){
           ParallelLogger::logInfo(paste0('Extracting for ',targetId))
-          plpData <- tryCatch({PatientLevelPrediction::getPlpData(connectionDetails = connectionDetails[[i]], 
+          createConnectionDetails <- DatabaseConnector::createConnectionDetails
+          connectionDetailsT <- do.call('createConnectionDetails',connectionDetails[[i]])
+          plpData <- tryCatch({PatientLevelPrediction::getPlpData(connectionDetails = connectionDetailsT, 
                                                         cdmDatabaseSchema = cdmDatabaseSchemas[i], 
                                                         oracleTempSchema = oracleTempSchema, 
                                                         cohortId = targetId, 
@@ -185,15 +189,21 @@ execute <- function(connectionDetails,
       ParallelLogger::logInfo(paste0("Running predictions for ",cdmDatabaseNames[i]))
       
       targets <- c(1001,2001,3001)
-      outcomes <- list(c(1002,2002,3002),
-                       c(1003,2003,3003),
-                       c(1004,2004,3004),
-                       c(1005,2005,3005),
-                       c(1006,2006,3006),
-                       c(1007,2007,3007, 4007),
-                       c(1008,2008,3008),
-                       c(1009,2009,4009),
-                       c(1010,2010,3010))
+      #outcomes <- list(c(1002,2002,3002),
+      #                 c(1003,2003,3003),
+      #                 c(1004,2004,3004),
+      #                 c(1005,2005,3005),
+      #                 c(1006,2006,3006),
+      #                 c(1007,2007,3007, 4007),
+      #                 c(1008,2008,3008),
+      #                 c(1009,2009,4009),
+      #                 c(1010,2010,3010))
+      
+      outcomes <- list(c(1002,2002,3002,1003,2003,3003),
+                       c(1004,2004,3004,1005,2005,3005),
+                       c(1006,2006,3006,1007,2007,3007),
+                       c(1008,2008,3008,1009,2009,4009),
+                       c(1010,2010,3010, 4007))
       
       ParallelLogger::logInfo("Full Models")
       developInPar(targets = targets,

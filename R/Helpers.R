@@ -163,7 +163,7 @@ internalValidateInPar <- function(resultLocation, devDatabaseName, phenotypes, t
     
     # create the cluster
     ParallelLogger::logInfo(paste0('Number of cores not specified'))
-    cores <- min(nrow(dataToValidate), parallel::detectCores() - 1)## set to max 
+    cores <- min(nrow(dataToValidate), parallel::detectCores() - 3)## set to max 
     ParallelLogger::logInfo(paste0('Using this many cores ', cores))
     ParallelLogger::logInfo(paste0('Set cores input to use fewer...'))
     
@@ -258,7 +258,7 @@ externalValidateInPar <- function(resultLocation, devDatabaseName,
     
     # create the cluster
     ParallelLogger::logInfo(paste0('Number of cores not specified'))
-    cores <- min(nrow(dataToValidate),parallel::detectCores() -1) ## set to max 
+    cores <- min(nrow(dataToValidate),parallel::detectCores() -3) ## set to max 
     ParallelLogger::logInfo(paste0('Using this many cores ', cores))
     ParallelLogger::logInfo(paste0('Set cores input to use fewer...'))
     
@@ -297,8 +297,12 @@ valPlpI <- function(settings){
   }
   
   ParallelLogger::logInfo('Loading data and model')
-  plpData <- PatientLevelPrediction::loadPlpData(settings$plpDataLoc)
-  plpResult <- PatientLevelPrediction::loadPlpResult(settings$modelLoc)
+  plpData <- tryCatch({PatientLevelPrediction::loadPlpData(settings$plpDataLoc)}, 
+                      error = function(e){ParallelLogger::logInfo(e); return(NULL)})
+  if(is.null(plpData)){return(NULL)}
+  plpResult <- tryCatch({PatientLevelPrediction::loadPlpResult(settings$modelLoc)}, 
+                        error = function(e){ParallelLogger::logInfo(e); return(NULL)})
+  if(is.null(plpResult)){return(NULL)}
   
   ParallelLogger::logInfo("Restricting data to model")
   plpData$covariateData$model <- plpResult$covariateSummary[plpResult$covariateSummary$covariateValue !=0, 'covariateId']
@@ -323,6 +327,10 @@ valPlpI <- function(settings){
                                                          databaseOutput = NULL,
                                                          silent = F)},
                      error = function(e){ParallelLogger::logInfo(e); return(NULL)})
+  
+  if(is.null(result)){
+    return(NULL)
+  }
   
   if(!dir.exists(file.path(settings$saveDirectory, settings$analysisId))){
     dir.create(file.path(settings$saveDirectory, settings$analysisId), recursive = T)
