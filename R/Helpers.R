@@ -29,12 +29,29 @@ developInPar <- function(targets,outcomes, ageGenderOnly = F, outputFolder, data
         result <- list(plpDataLoc = file.path(outputFolder,databaseName,'data',paste0('T_', targetId, ifelse(ageGenderOnly,'_ag','') )),
                        outcomeId = outcomeId,
                        modelSettings = model,
-                       minCovariateFraction = 0.0001,
+                       splitSettings = PatientLevelPrediction::createDefaultSplitSetting(
+                         splitSeed = seed
+                         ),
+                       populationSettings = PatientLevelPrediction::createStudyPopulationSettings(
+                         firstExposureOnly = FALSE,
+                         washoutPeriod = 0,
+                         removeSubjectsWithPriorOutcome = T, # remove if they have outcome in prior year?
+                         priorOutcomeLookback = 99999,
+                         requireTimeAtRisk = T,
+                         minTimeAtRisk= 1,
+                         riskWindowStart = 0,
+                         startAnchor = 'cohort start',
+                         riskWindowEnd = 365,
+                         endAnchor = 'cohort start'
+                       ),
+                       executeSettings = PatientLevelPrediction::createExecuteSettings(
+                         runSplitData = T, 
+                         runPreprocessData = T, 
+                         runModelDevelopment = T, 
+                         runCovariateSummary = F
+                         ),
+                       preprocessSettings = PatientLevelPrediction::createPreprocessSettings(),
                        saveDirectory= file.path(outputFolder,databaseName,'models'), 
-                       savePlpData=F, 
-                       savePlpResult=T, 
-                       savePlpPlots = F, 
-                       saveEvaluation = F, splitSeed = seed,
                        analysisId = paste0('T_',targetId,'_O_',outcomeId,ifelse(ageGenderOnly,'_ag','')))
         return(result)
       }
@@ -62,41 +79,6 @@ runPlpI <- function(settings){
   settings$plpData <- PatientLevelPrediction::loadPlpData(settings$plpDataLoc)
   settings$plpDataLoc <- NULL
   
-  settings$population <- PatientLevelPrediction::createStudyPopulation(settings$plpData,
-                                               outcomeId = settings$outcomeId,
-                                               firstExposureOnly = FALSE,
-                                               washoutPeriod = 0,
-                                               removeSubjectsWithPriorOutcome = FALSE,
-                                               priorOutcomeLookback = 99999,
-                                               requireTimeAtRisk = T,
-                                               minTimeAtRisk=1,
-                                               riskWindowStart = 0,
-                                               startAnchor = 'cohort start',
-                                               riskWindowEnd = 365,
-                                               endAnchor = 'cohort start')
-  
-  if(sum(settings$population$outcomeCount>0)<25){
-    ParallelLogger::logInfo(paste0('Insufficient outcome count'))
-    return(NULL)
-  }
-  
-  settings$outcomeId<- NULL
-  
-  getMinCov <- function(x){
-    if(x>1000){
-      return(0.0001)
-    }
-    if(x>500){
-      return(0.001)
-    }
-    if(x>200){
-      return(0.01)
-    }
-    return(0.05)
-  }
-  
-  settings$minCovariateFraction <- getMinCov(sum(settings$population$outcomeCount>0))
-  
   result <- tryCatch({do.call(PatientLevelPrediction::runPlp, settings)},
                      error = function(e){ParallelLogger::logInfo(e); return(NULL)})
   return(result)
@@ -118,14 +100,6 @@ internalValidateWrapper <- function(resultLocation, devDatabaseName,phenotypeGro
                               phenotype = phenotype, 
                               target = target, 
                               benchmark = F)
-        
-        internalValidateInPar(resultLocation = resultLocation, 
-                              devDatabaseName = devDatabaseName, 
-                              phenotypes = phenotypes, 
-                              targets = targets, 
-                              phenotype = phenotype, 
-                              target = target,
-                              benchmark = T)
       }
     }
   }
@@ -214,15 +188,6 @@ externalValidateWrapper <- function(resultLocation,
                               target = target, 
                               benchmark = F)
         
-        ParallelLogger::logInfo('Eternally validating benchmark model')
-        externalValidateInPar(resultLocation = resultLocation, 
-                              devDatabaseName = devDatabaseName,
-                              valDatabaseNames = valDatabaseNames,
-                              phenotypes = phenotypes, 
-                              targets = targets, 
-                              phenotype = phenotype, 
-                              target = target,
-                              benchmark = T)
       }
     }
   }

@@ -127,7 +127,6 @@ execute <- function(connectionDetails,
                                                            endDays = -1)
       for(targetId in c(1001,2001,3001)){
         fileName <- file.path(outputFolder,databaseName,'data', paste0('T_',targetId))
-        fileName2 <- file.path(outputFolder,databaseName,'data', paste0('T_',targetId,'_ag'))
         if(!dir.exists(fileName )){
           dir.create(fileName, recursive = T)
         }
@@ -136,46 +135,33 @@ execute <- function(connectionDetails,
           ParallelLogger::logInfo(paste0('Extracting for ',targetId))
           createConnectionDetails <- DatabaseConnector::createConnectionDetails
           connectionDetailsT <- do.call('createConnectionDetails',connectionDetails[[i]])
-          plpData <- tryCatch({PatientLevelPrediction::getPlpData(connectionDetails = connectionDetailsT, 
-                                                        cdmDatabaseSchema = cdmDatabaseSchemas[i], 
-                                                        oracleTempSchema = oracleTempSchema, 
-                                                        cohortId = targetId, 
-                                                        outcomeIds = c(1002,2002,3002,1003,2003,3003,1004,2004,3004,1005,2005,3005,1006,2006,3006,1007,2007,3007,4007,1008,2008,3008,1009,2009,4009,1010,2010,3010), 
-                                                        cohortDatabaseSchema = cohortDatabaseSchemas[i], 
-                                                        cohortTable = cohortTables[i], 
-                                                        outcomeDatabaseSchema = cohortDatabaseSchemas[i], 
-                                                        outcomeTable = cohortTables[i], 
-                                                        cdmVersion = cdmVersion, 
-                                                        covariateSettings = covSet, 
-                                                        washoutPeriod = 365, 
-                                                        firstExposureOnly = T, 
-                                                        sampleSize = 2000000)},
-                              error = function(e){ParallelLogger::logInfo(e);return(NULL)})
+          plpData <- tryCatch({PatientLevelPrediction::getPlpData(
+            databaseDetails = PatientLevelPrediction::createDatabaseDetails(
+              connectionDetails = connectionDetailsT, 
+              cdmDatabaseSchema = cdmDatabaseSchemas[i], 
+              cohortDatabaseSchema = cohortDatabaseSchemas[i], 
+              cohortTable = cohortTables[i], 
+              outcomeDatabaseSchema = cohortDatabaseSchemas[i],
+              outcomeTable = cohortTables[i], 
+              targetId = targetId, 
+              outcomeIds = c(1002,2002,3002,1003,2003,3003,1004,2004,3004,1005,2005,3005,1006,2006,3006,1007,2007,3007,4007,1008,2008,3008,1009,2009,4009,1010,2010,3010),
+              cdmVersion = cdmVersion
+            ), 
+            restrictPlpDataSettings = PatientLevelPrediction::createRestrictPlpDataSettings(
+              washoutPeriod = 365, 
+              firstExposureOnly = T, 
+              sampleSize = 2000000
+              ),
+            covariateSettings = covSet, 
+            )},
+           
+            error = function(e){ParallelLogger::logInfo(e);return(NULL)})
           
           if(!is.null(plpData)){
             PatientLevelPrediction::savePlpData(plpData, fileName)
           }
         } else{
           ParallelLogger::logInfo(paste0('Data exists for ',targetId))
-        }
-        
-        
-        # restrict to age/gender only data
-        if(!file.exists(file.path(fileName2,'covariates')) & file.exists(file.path(fileName,'covariates')) ){
-          ParallelLogger::logInfo(paste0('Creating age/gender only data for ',targetId))
-          plpData <- PatientLevelPrediction::loadPlpData(fileName)
-          
-          plpData$covariateData$covariateIO <- data.frame(covariateId = c(8532001, 8507001, (1:24)*1000+3))
-          plpData$covariateData$covariates <- plpData$covariateData$covariates %>% 
-            dplyr::inner_join(plpData$covariateData$covariateIO, by = 'covariateId')
-          
-          plpData$covariateData$covariateRef <- plpData$covariateData$covariateRef %>% 
-            dplyr::inner_join(plpData$covariateData$covariateIO, by = 'covariateId')
-          
-          PatientLevelPrediction::savePlpData(plpData, fileName2)
-          
-        } else{
-          ParallelLogger::logInfo(paste0('Age/gender data exists for ',targetId))
         }
         
       }
@@ -209,14 +195,6 @@ execute <- function(connectionDetails,
       developInPar(targets = targets,
                    outcomes = outcomes,
                    ageGenderOnly = F,
-                   outputFolder = outputFolder, 
-                   databaseName = cdmDatabaseNames[i],
-                   seed = 1022 )
-      
-      ParallelLogger::logInfo("Benchmark Models")
-      developInPar(targets = targets,
-                   outcomes = outcomes,
-                   ageGenderOnly = T,
                    outputFolder = outputFolder, 
                    databaseName = cdmDatabaseNames[i],
                    seed = 1022 )
