@@ -152,7 +152,7 @@ execute <- function(connectionDetails,
               firstExposureOnly = T, 
               sampleSize = 2000000
               ),
-            covariateSettings = covSet, 
+            covariateSettings = covSet
             )},
            
             error = function(e){ParallelLogger::logInfo(e);return(NULL)})
