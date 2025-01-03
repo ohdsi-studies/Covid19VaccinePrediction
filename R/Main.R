@@ -52,7 +52,8 @@
 #'                                         \item{ERROR}{Show error messages}
 #'                                         \item{FATAL}{Be silent except for fatal errors}
 #'                                         }                              
-#' @param cdmVersion           The version of the common data model                       
+#' @param cdmVersion           The version of the common data model   
+#' @param cores     The number of threads to use when developing the models                    
 #'
 #' @examples
 #' \dontrun{
@@ -90,7 +91,9 @@ execute <- function(connectionDetails,
                     runValidate = F,
                     sampleSize = NULL,
                     verbosity = "INFO",
-                    cdmVersion = 5) {
+                    cdmVersion = 5,
+                    cores = 4
+                    ) {
   
   if (!file.exists(outputFolder))
     dir.create(outputFolder, recursive = TRUE)
@@ -185,11 +188,13 @@ execute <- function(connectionDetails,
       #                 c(1009,2009,4009),
       #                 c(1010,2010,3010))
       
-      outcomes <- list(c(1002,2002,3002,1003,2003,3003),
-                       c(1004,2004,3004,1005,2005,3005),
-                       c(1006,2006,3006,1007,2007,3007),
-                       c(1008,2008,3008,1009,2009,4009),
-                       c(1010,2010,3010, 4007))
+      outcomes <- c(1002,2002,3002,1003,
+                    2003,3003,1004,2004,
+                    3004,1005,2005,3005,
+                    1006,2006,3006,1007,
+                    2007,3007,1008,2008,
+                    3008,1009,2009,4009,
+                    1010,2010,3010, 4007)
       
       ParallelLogger::logInfo("Full Models")
       developInPar(targets = targets,
@@ -197,7 +202,8 @@ execute <- function(connectionDetails,
                    ageGenderOnly = F,
                    outputFolder = outputFolder, 
                    databaseName = cdmDatabaseNames[i],
-                   seed = 1022 )
+                   seed = 1022, 
+                   cores = cores)
     }
     
   }

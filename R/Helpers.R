@@ -1,16 +1,17 @@
 
-developInPar <- function(targets,outcomes, ageGenderOnly = F, outputFolder, databaseName, seed ){
+developInPar <- function(targets,outcomes, ageGenderOnly = F, outputFolder, databaseName, seed , cores = NULL){
   model <- PatientLevelPrediction::setLassoLogisticRegression()
   
   for(targetId in targets ){
-    for(outcomeSets in outcomes){
       
       ParallelLogger::logInfo(paste0('Running models for: target ', targetId, 
-                                     ' and outcomes ', paste0(outcomeSets, collapse = '', sep=',')))
+                                     ' and outcomes ', paste0(outcome, collapse = '', sep=',')))
       
       # create the cluster
-      ParallelLogger::logInfo(paste0('Number of cores not specified'))
-      cores <- length(outcomeSets) 
+      if(is.null(cores)){
+        ParallelLogger::logInfo(paste0('Number of cores not specified'))
+        cores <- length(outcomeSets) 
+      }
       ParallelLogger::logInfo(paste0('Using this many cores ', cores))
       ParallelLogger::logInfo(paste0('Set cores input to use fewer...'))
       
@@ -55,7 +56,7 @@ developInPar <- function(targets,outcomes, ageGenderOnly = F, outputFolder, data
                        analysisId = paste0('T_',targetId,'_O_',outcomeId,ifelse(ageGenderOnly,'_ag','')))
         return(result)
       }
-      runSettings <- lapply(outcomeSets, getRunSettings)
+      runSettings <- lapply(outcomes, getRunSettings)
       
       allResults <- ParallelLogger::clusterApply(cluster = cluster, 
                                                  x = runSettings, 
@@ -66,7 +67,6 @@ developInPar <- function(targets,outcomes, ageGenderOnly = F, outputFolder, data
       
     }
     
-  }
 }
 
 runPlpI <- function(settings){

@@ -18,7 +18,8 @@ execute(
   runValidate = F,
   sampleSize = NULL,
   verbosity = "INFO",
-  cdmVersion = 5
+  cdmVersion = 5,
+  cores = 4
 )
 }
 \arguments{
@@ -68,6 +69,8 @@ performance.}
 }}
 
 \item{cdmVersion}{The version of the common data model}
+
+\item{cores}{The number of threads to use when developing the models}
 
 \item{createProtocol}{Creates a protocol based on the analyses specification}
 }

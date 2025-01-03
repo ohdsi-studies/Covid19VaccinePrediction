@@ -2,6 +2,7 @@
 % Please edit documentation in R/CovidVaccinePrediction.R
 \docType{package}
 \name{CovidVaccinePrediction}
+\alias{CovidVaccinePrediction-package}
 \alias{CovidVaccinePrediction}
 \title{CovidVaccinePrediction}
 \description{
