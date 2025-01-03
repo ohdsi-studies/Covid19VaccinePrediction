@@ -5,12 +5,12 @@ developInPar <- function(targets,outcomes, ageGenderOnly = F, outputFolder, data
   for(targetId in targets ){
       
       ParallelLogger::logInfo(paste0('Running models for: target ', targetId, 
-                                     ' and outcomes ', paste0(outcome, collapse = '', sep=',')))
+                                     ' and outcomes ', paste0(outcomes, collapse = '', sep=',')))
       
       # create the cluster
       if(is.null(cores)){
         ParallelLogger::logInfo(paste0('Number of cores not specified'))
-        cores <- length(outcomeSets) 
+        cores <- length(outcomes) 
       }
       ParallelLogger::logInfo(paste0('Using this many cores ', cores))
       ParallelLogger::logInfo(paste0('Set cores input to use fewer...'))
