@@ -65,6 +65,9 @@ developInPar <- function(targets,outcomes, ageGenderOnly = F, outputFolder, data
                                                  progressBar = TRUE)
       ParallelLogger::stopCluster(cluster)
       
+      # garbage collection?
+      gc(verbose=TRUE, full=TRUE)
+      
     }
     
 }
