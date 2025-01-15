@@ -78,6 +78,10 @@ runPlpI <- function(settings){
     ParallelLogger::logInfo(paste0('Results exist in ',file.path(settings$saveDirectory,settings$analysisId), ' so skipping'))
     return(NULL)
   }
+  if(!dir.exists(file.path(settings$plpDataLoc))){
+    ParallelLogger::logInfo(paste0('No Data in ',file.path(settings$plpDataLoc), ' so skipping'))
+    return(NULL)
+  }
   
   settings$plpData <- PatientLevelPrediction::loadPlpData(settings$plpDataLoc)
   settings$plpDataLoc <- NULL
