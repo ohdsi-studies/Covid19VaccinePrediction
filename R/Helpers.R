@@ -83,7 +83,8 @@ runPlpI <- function(settings){
     return(NULL)
   }
   
-  settings$plpData <- PatientLevelPrediction::loadPlpData(settings$plpDataLoc)
+  settings$plpData <- tryCatch({PatientLevelPrediction::loadPlpData(settings$plpDataLoc)},
+                               error = function(e){ParallelLogger::logInfo(e); return(NULL)})
   settings$plpDataLoc <- NULL
   
   result <- tryCatch({do.call(PatientLevelPrediction::runPlp, settings)},
